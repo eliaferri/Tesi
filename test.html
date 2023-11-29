@@ -1,0 +1,486 @@
+
+<!--
+    subject_areas_categories = {
+        '1702': 'Artificial Intelligence',
+        '1800': 'General Decision Science',
+        '1801': 'Decision Sciences',
+        '1802': 'Information Systems and Management',
+        '1803': 'Management Science and Operations Research',
+        '1804': 'Statistics, Probability and Uncertainty',
+        '2613': 'Statistics and Probability',
+
+        '1702': 'limegreen',
+        '1800': 'darkturquoise',
+        '1801': 'royalblue',
+        '1802': 'magenta',
+        '1803': 'gold',
+        '1804': 'red',
+        '2613': 'orangered',
+    }
+-->
+
+  <body>
+      <div id="deepscatter">
+        <div class="overlay">
+          <div id="color-legend"></div>
+        </div>
+      </div>
+
+      <div class="searchbar">
+        <h3 class="search-title"> Scopus Explorer </h3>
+        
+        <input id="query-value" name="query-value" type="text" field="" class="query-input">
+
+        <select id="query-field" class="query-input" name="query-field">
+          <option value="title">Title</option>
+          <option value="author">Author</option>
+          <option value="pubdate">Publication Year</option>        
+        </select>
+
+        <button id="search-btn" class="query-input"> Cerca </button>
+      </div>
+  </body>
+  
+  <script type="module">
+    import Scatterplot from './src/deepscatter';
+    import { select } from 'd3-selection';
+  
+    //definisco i valori iniziali del grafo
+    const prefs = {
+      source_url: '/tiles', // the output of the quadfeather tiling engine
+      max_points: 1000000000,
+      alpha: 100, // Saturation. 0 - transparent, 100 - solid
+      zoom_balance: 0.7, // Rate at which points increase size. https://observablehq.com/@bmschmidt/zoom-strategies-for-huge-scatterplots-with-three-js
+      point_size: 2, 
+      background_color: '#000000',
+      click_function: "window.open(datum.doi, '_blank').focus();",
+      //click_function: "console.log(datum);",
+
+      // encoding API based roughly on Vega Lite: https://vega.github.io/vega-lite/docs/encoding.html
+      encoding: {
+        color: {
+          field: 'subject_area',
+          domain: ['A+1702', 'A+1800', 'A+1801', 'A+1802', 'A+1803', 'A+1804', 'A+2613', 'A+1833'],
+          range: [
+            'limegreen',
+            'darkturquoise',
+            'royalblue',
+            'magenta',
+            'gold',
+            'red',
+            'orangered',
+            'brown',
+          ],
+        },
+        x: {
+          field: 'x',
+          transform: 'literal',
+        },
+        y: {
+          field: 'y',
+          transform: 'literal',
+        },
+      },
+    };
+  
+    const scatterplot = new Scatterplot('#deepscatter');
+    const plot = scatterplot.plotAPI(prefs);
+
+    select('#search-btn').on("click", (event, data) => search());
+    document.getElementById("query-value").addEventListener("keypress", (event) => eventSearch(event) );
+
+    plot.then( () => paint_legend() )
+
+    function paint_legend() {
+      const scale = scatterplot._renderer.aes.store.color.current.scale;
+
+      //creo e la legenda per subject_area
+      let domain = [
+        'Artificial Intelligence', 'General Decision Science','Decision Sciences',
+        'Information Systems and Management','Management Science and Operations Research',
+        'Statistics, Probability and Uncertainty',
+        'Statistics and Probability', 'Data Science', 'Reset'
+      ]
+
+      select('#color-legend')
+        .selectAll('div')
+        .data(domain)
+        .join('button')
+        .attr('class', 'legend-div')
+        .attr('id', (d) => d)
+        .text((d) => d)
+        .on("click", (event, d) => filterSubjectArea(d))
+        .style('background-color', (d) => scale(d));
+    }
+
+    /* ESEMPI DI FILTRO:
+
+      RANGE DI VALORI a-b (within)
+        encoding: {
+          filter: {
+            field: 'x',
+            op: 'within',
+            a: 1,
+            b: 10,
+          },
+        };
+      
+      MAGGIORE / MINORE / UGUALE rispetto ad a ( gt / st / eq )
+        encoding: {
+          filter: {
+            field: 'x',
+            op: 'gt',
+            a: 12.3,
+          },
+        };
+      
+      FILTERING PER STRINGHE / FUNZIONI (lambda)
+        encoding: {
+          filter: {
+            field: 'x',
+            lambda: 'd => d=="Ciao" '
+          },
+        };
+
+    */
+
+    //CODICE PER TOOLTIP
+    scatterplot.tooltip_html = (datum) => {
+      
+      let subject = 'Artificial Intelligence';
+      //console.log(datum.pubdate, typeof(datum.pubdate))
+
+      switch (datum.subject_area){
+        case 'A+1702': subject = 'Artificial Intelligence'; break;
+        case 'A+1800': subject = 'General Decision Science'; break;
+        case 'A+1801': subject = 'Decision Sciences'; break;
+        case 'A+1802': subject = 'Information Systems and Management'; break;
+        case 'A+1803': subject = 'Management Science and Operations Research'; break;
+        case 'A+1804': subject = 'Statistics, Probability and Uncertainty'; break;
+        case 'A+2613': subject = 'Statistics and Probability'; break;
+        case 'A+1833': subject = 'Data Science'; break;
+        default: subject = 'Altro'; break;
+      }
+
+      return `<div class="tooltip-data">
+                <dl>
+                  <dt>id</dt>
+                    <dd>${datum.pubid}</dd>
+                  <dt>eid</dt>
+                    <dd><a href="${datum.doi}">${datum.eid}</a></dd>
+                  <dt>publication year</dt>
+                    <dd> ${datum.pubdate.getFullYear()} </dd>
+                  <dt>authors</dt>
+                    <dd> ${datum.authors} </dd>
+                  <dt>title</dt>
+                    <dd> <b>${datum.title}</b> - ${datum.pubname}</dd>
+                  <dt>subject area</dt>
+                    <dd>${subject}</dd>
+                </dl>
+              </div>`;
+    };
+    
+    //FUNZIONI PER FLIPPARE IL GRAFO (inutile)
+    let cycle = 1
+    select('#flip').on('click', () => {
+      if ( cycle %2 ) {
+        const new_coding = {
+          encoding: {
+            x: {
+              field: 'y',
+              transform: 'literal',
+            },
+            y: {
+              field: 'x',
+              transform: 'literal',
+            },
+          },
+        };
+
+        cycle++;
+        scatterplot.plotAPI(new_coding);
+      } else {
+        const new_coding = {
+          encoding: {
+            x: {
+              field: 'x',
+              transform: 'literal',
+            },
+            y: {
+              field: 'y',
+              transform: 'literal',
+            },
+          },
+        };
+
+        cycle++;
+        scatterplot.plotAPI(new_coding);
+      }
+    });
+
+    //FILTRO IL GRAFO PER subject_area
+    function filterSubjectArea(d) {
+      
+      let cat = "reset" ;
+
+      switch (d){
+        case 'Artificial Intelligence' :  cat = "A+1702"; break;
+        case 'General Decision Science' : cat = "A+1800"; break;
+        case 'Decision Sciences' : cat = "A+1801"; break;
+        case 'Information Systems and Management' : cat = "A+1802"; break;
+        case 'Management Science and Operations Research' : cat = "A+1803"; break;
+        case 'Statistics, Probability and Uncertainty' : cat = "A+1804"; break;
+        case 'Statistics and Probability' : cat = "A+2613"; break;
+        case 'Data Science' : cat = "A+1833"; break;
+        default: cat = "reset"; break;
+      }
+
+      if (cat != "reset") {
+        const new_coding = {
+          encoding:{
+            filter:{
+              field:'subject_area',
+              lambda: `d => d=='${cat}'`
+            }
+          }
+        };
+
+        console.log("NEW CODING: ",new_coding);
+        scatterplot.plotAPI(new_coding); 
+      } else {
+        const reset = {encoding:{ filter: null}};
+        console.log("RESET");
+        scatterplot.plotAPI(reset); 
+      }
+
+    }
+
+    //FILTRO IL GRAFO PER query testuale
+    function search() {
+      let q = document.getElementById("query-value").value;
+      let field = document.getElementById("query-field").value;
+      console.log("Query = ", q, " Field= ", field);
+
+      //resetto il grafo per evitare bug (filtro non applicati, issue on gitHub)
+      //a volte funziona anche senza, va tenuto controllato
+      //scatterplot.plotAPI( {encoding: {filter: null}} );
+
+      //fields: title / pubdate / authors
+      const filter = {
+        encoding:{
+          filter: {
+            field:'subject_area', //field: `${field}`
+            lambda: `d => d.search('${q}') >= 0`
+          }
+        }
+      };
+
+      console.log("NEW FILTER: ", filter);
+      scatterplot.plotAPI(filter);
+    }
+
+    //associato alla searchbar, effettua la ricerca quando viene premuto il tasto Invio
+    function eventSearch(event){
+        if (event.key == "Enter"){
+          search();
+        }
+        return;
+    } 
+
+  </script>
+  
+
+  <style>
+
+    #deepscatter {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      z-index: 0;
+    }
+  
+    .overlay {
+      position: fixed;
+      top: 0;
+      right: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 99;
+    }
+  
+    #color-legend {
+      display: flex;
+      flex-direction: column;
+      align-items: right;
+      justify-content: right;
+    }
+  
+    .legend-div {
+      margin: 5px;
+      padding: 5px 15px;
+    }
+
+    /* Styling tooltip content */
+      .tooltip {
+        z-index: 99;
+        opacity: 1 !important;
+        min-width: 300px !important;
+        border-radius: 8px;
+        background: ivory;
+      }
+
+      dl {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+      }
+
+      dt {
+        font-weight: bold;
+        font-variant: small-caps;
+        color: rgb(128, 19, 0);
+      }
+
+      dt::after {
+        content: ':';
+      }
+
+      dd {
+        margin: 0 0 0 10px;
+        padding: 0 0 0.5em 0;
+      }
+    /* fine styling tooltip*/
+
+    #reset{
+      background: ivory !important;
+    }
+
+    /* styling searchbar */
+      .searchbar {
+        position: fixed;
+        background-color: ivory;
+        border-radius: 10px;
+        margin: 10px 0 0 10px;
+        padding: 10px 20px 20px 20px;
+      }
+
+      .query-input {
+        font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        min-height: 40px;
+        margin-right: 3px;
+        padding: 0.5em;
+        border-style: solid;
+        border-radius: 10px;
+        border-color: antiquewhite;
+      }
+
+      .query-input:hover, .query-input:focus {
+        background-color: antiquewhite !important;
+      }
+
+      #search-btn {
+        padding-left: 15px;
+        padding-right: 15px;
+        background-color:white;
+        cursor: pointer;
+      }
+
+      #query-value {
+        min-width: 200px;
+        background-image: url('searchicon.png');
+        background-position: 10px 7px;
+        background-repeat: no-repeat;
+        padding-left: 40px;
+      }
+      
+      .search-title {
+        font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        text-align: center;
+        font-size: 25px;
+        color: darksalmon;
+        margin-top: 0px;
+        padding-top: 5px;
+      }
+
+    /* fine styling searchbar */
+
+
+  </style>
+
+
+  <script>
+    /*
+    import init, { count_regex_matches } from '$lib/wasm_regex/wasm_regex';
+
+
+    export default async function apply_search(query, field, duration = 500, plot, on_find = (d: FindResults) => undefined) {
+      await run_search(query, plot, field, on_find);
+      if (query === '') {
+        return plot.plotAPI({
+          duration,
+          encoding: {
+            filter: null,
+            color: {
+              constant: 'orange'
+            },
+            size: {
+              constant: 1
+            },
+            foreground: null
+          }
+        });
+      } 
+      return plot.plotAPI({
+        duration,
+        alpha: 50,
+        encoding: {
+          filter: null,
+          color: {
+            field: `search: (${field}) ${query}`,
+            domain: [0, 1],
+            range: ['gray', 'orange']
+          },
+          size: {
+            field: `search: (${field}) ${query}`,
+            domain: [0, 1],
+            range: [1, 2]
+          },
+          foreground: {
+            field: `search: (${field}) ${query}`,
+            op: 'eq',
+            a: 1
+          }
+        }
+      });
+
+    }
+
+    export type FindResults = {
+      matches: any[],
+      tile: any,
+      hits: number
+    }
+
+    async function run_search(query, plot, field, on_find = (d : FindResults) => undefined) {
+      if (query === '') {
+        return;
+      }
+      await init();
+      plot._root.transformations[`search: (${field}) ${query}`] = async function (tile) {
+        const data = tile.record_batch.getChild(field).data[0];
+        const values = data.values;
+        const offsets = data.valueOffsets;
+        const matches_in_batches = count_regex_matches(values, offsets, query, true);
+        const matches = [];
+        let hits = 0;
+        for (let i = 0; i < matches_in_batches.length; i++) {
+          if (matches_in_batches[i] > 0) {
+            matches.push(tile.record_batch.get(i))
+            hits += 1
+          }
+        }
+        on_find({matches, tile, hits});
+        return matches_in_batches
+      };
+    }
+    */
+  </script>
