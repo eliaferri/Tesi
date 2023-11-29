@@ -1,0 +1,22 @@
+node_modules
+public/tiles
+.vscode
+
+dist/tiles
+test-results/
+playwright-report/
+dist/tiles/*
+co2.feather co2.html
+dist/
+
+ignored/
+tmp.csv
+index.html
+pubs_with_coords_authsCap.csv
+index-simplest-way-to-start.html
+integers.html
+vietnam2.html
+pubs_with_coords_authsCap_doi_f1.csv
+integers.html
+index.html
+index-simplest-way-to-start.html
