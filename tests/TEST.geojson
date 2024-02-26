@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "name": "LIST",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "General decision Science"
+      },
+      "geometry": { "type": "Point", "coordinates": [30.0, -60.0] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Artificial Intelligence"
+      },
+      "geometry": { "type": "Point", "coordinates": [-12.0, 50.0] }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-20.0, -20.0] },
+      "properties": {
+        "name": "Information Systems and Management"
+      }      
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Decision Sciences"
+      },
+      "geometry": { "type": "Point", "coordinates": [30.0, -90.0] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Management Science and Operations Research"
+      },
+      "geometry": { "type": "Point", "coordinates": [-80.0, -60.0] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Statistics, Probability and Uncertainty"
+      },
+      "geometry": { "type": "Point", "coordinates": [70.0, 10.0] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Statistics and Probability"
+      },
+      "geometry": { "type": "Point", "coordinates": [70.0, 50.0] }
+    }
+  ]
+}

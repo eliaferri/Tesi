@@ -933,10 +933,11 @@ class LabelClick extends SettableFunction<void, GeoJsonProperties> {
       feature.__activated = undefined;
     } else {
       feature.__activated = true;
-      filter = {
+      /*filter = {
         field: labelset.label_key,
         lambda: `d => d === '${feature.properties[labelset.label_key]}'`,
-      };
+      };*/
+      filter = null;
     }
     void this.plot.plotAPI({
       encoding: { filter },
