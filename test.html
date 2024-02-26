@@ -226,6 +226,7 @@
     
     let palette = 0;
     let visible_keywords = true;
+    let visible_categories = [1, 1, 1, 1, 1, 1, 1]
 
     /* Funzione per stampare la legenda filtrabile in alto a destra*/
     function paint_legend() {
@@ -374,40 +375,69 @@
     //FILTRO IL GRAFO PER subject_area
     function filterSubjectArea(d) {
       
-      let cat = "reset" ;
-
       switch (d){
-        case 'Artificial Intelligence' :  cat = "A+1702"; break;
-        case 'General Decision Science' : cat = "A+1800"; break;
-        case 'Decision Sciences' : cat = "A+1801"; break;
-        case 'Information Systems and Management' : cat = "A+1802"; break;
-        case 'Management Science and Operations Research' : cat = "A+1803"; break;
-        case 'Statistics, Probability and Uncertainty' : cat = "A+1804"; break;
-        case 'Statistics and Probability' : cat = "A+2613"; break;
-        case 'Data Science' : cat = "A+1833"; break;
-        default: cat = "reset"; break;
+        case 'Artificial Intelligence' :  visible_categories[0] = !visible_categories[0]; break;
+        case 'General Decision Science' : visible_categories[1] = !visible_categories[1]; break;
+        case 'Decision Sciences' : visible_categories[2] = !visible_categories[2]; break;
+        case 'Information Systems and Management' : visible_categories[3] = !visible_categories[3]; break;
+        case 'Management Science and Operations Research' : visible_categories[4] = !visible_categories[4]; break;
+        case 'Statistics, Probability and Uncertainty' : visible_categories[5] = !visible_categories[5]; break;
+        case 'Statistics and Probability' : visible_categories[6] = !visible_categories[6]; break;
+        default: {
+          visible_categories = [1, 1, 1, 1, 1, 1, 1];
+          setFilterButtonState();
+          const reset = {encoding:{ filter: null}};
+          scatterplot.plotAPI(reset);
+          return;
+        }
       }
 
-      if (cat != "reset") {
-        const new_coding = {
-          encoding:{
-            filter:{
-              field:'subject_area',
-              lambda: `d => d=='${cat}'`
-            }
+      let domain = ['A+1702','A+1800','A+1801','A+1802','A+1803','A+1804','A+2613'];
+      let cat = ""
+      let tot = 0
+
+      for(let i=0; i<visible_categories.length; i++){
+        if(visible_categories[i]){
+          cat += "d=='"+domain[i]+"'||";
+          tot++;
+        }
+      }
+      cat = cat.slice(0, cat.length-2);
+      
+      if (tot == 0) {
+        visible_categories = [1, 1, 1, 1, 1, 1, 1];
+      }
+
+      setFilterButtonState();
+
+      const new_coding = {
+        encoding:{
+          filter:{
+            field:'subject_area',
+            lambda: `d => ${cat}`
           }
-        };
+        }
+      };
 
-        console.log("NEW CODING: ",new_coding);
-        scatterplot.plotAPI(new_coding); 
+      console.log("NEW FILTER: ",new_coding);
+      scatterplot.plotAPI(new_coding); 
+    }
 
-      } else {
-        const reset = {encoding:{ filter: null}};
-        //const reset = {encoding:{ filter: null, filter2: null}};
-        console.log("RESET");
-        scatterplot.plotAPI(reset); 
+    function setFilterButtonState(){
+
+      const scale = scatterplot._renderer.aes.store.color.current.scale;
+      let div = document.getElementById("color-legend").children
+
+      //console.log(scale(i))
+
+      for (let i=0; i<visible_categories.length; i++){
+        if(visible_categories[i]){
+          div[i].style.backgroundColor = scale(i);
+        } else {
+          div[i].style.backgroundColor = "grey";
+        }
+        
       }
-
     }
 
     //FILTRO IL GRAFO PER query testuale
