@@ -16,18 +16,8 @@
         '1804': 'red',
         '2613': 'orangered',
 
-        range: [
-            'limegreen',
-            'darkturquoise',
-            'royalblue',
-            'magenta',
-            'gold',
-            'red',
-            'orangered'
-          ],
-
-        patello chiaro (troppo chiaro)
-        range: [
+        //palette alternative
+        /*range: [
             '#D5EDB9', //verde chiaro
             '#A4E1E9', //azzurro chiaro
             '#789CCE', //blu
@@ -35,18 +25,57 @@
             '#FBE8A4', //giallo
             '#FAC9DC', //rosso
             '#FFC198', //arancione
-          ],
+          ],*/
+          /*range: [
+            '#c0e57c', //(Lime Green desaturato)
+            '#8ae6e8', //(Dark Turquoise desaturato)
+            '#789CCE', //(Royal Blue desaturato)
+            '#e586f2', //(Magenta desaturato)
+            '#fcd875', //(Gold desaturato)
+            '#cc6b6b', //(Rosso desaturato)
+            '#f5b4a1', //(Orange Red desaturato)
+          ]*/
+          /*range: [
+            '#1abc9c', //(Turchese)
+            '#3498db', //(Blu)
+            '#e74c3c', //(Rosso)
+            '#2ecc71', //(Verde)
+            '#f39c12', //(Giallo)
+            '#9b59b6', //(Viola)
+            '#FF5733', //(Arancione)
+          ]*/
 
-        palette chiara (rosso/arancio sovrapposti)
-        range: [
-            '#2ecc71', //verde chiaro
-            '#fac9dc', //rosa
-            '#3498db', //blu
-            '#9b59b6', //viola
-            '#f39c12', //giallo
-            '#d9534f', //rosso
-            '#FF5733', //arancione
-          ],
+              /* ESEMPI DI FILTRO:
+
+      RANGE DI VALORI a-b (within)
+        encoding: {
+          filter: {
+            field: 'x',
+            op: 'within',
+            a: 1,
+            b: 10,
+          },
+        };
+      
+      MAGGIORE / MINORE / UGUALE rispetto ad a ( gt / st / eq )
+        encoding: {
+          filter: {
+            field: 'x',
+            op: 'gt',
+            a: 12.3,
+          },
+        };
+      
+      FILTERING PER STRINGHE / FUNZIONI (lambda)
+        encoding: {
+          filter: {
+            field: 'x',
+            lambda: 'd => d=="Ciao" '
+          },
+        };
+
+    */
+        
     }
 -->
 
@@ -92,7 +121,7 @@
         <div id="light-dark-mode">
           <button id="swap-palette-btn" class="extra-btn"> Change Palette </button>
           <button id="hide-labels-btn" class="extra-btn"> Hide Keywords </button>
-          <button id="info-btn" class="extra-btn popup"> More Info </button>
+          <button id="info-btn" class="extra-btn popup"> Credits </button>
 
           <div id="info-modal" class="modal">
 
@@ -101,10 +130,9 @@
                 <span class="close-modal">&times;</span>
               </div>
               <div class="modal-body">
-                <h2>The Landscape of Data Science Research</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                <br>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                <h2>The "Scopus Publication Lens" is an <a href="https://islab.di.unimi.it" target="_blank" style="color:white">ISLab</a> project</h2>
+                <h4>Dev team: Elia Ferri</h4>
+                <a href="https://islab.di.unimi.it" target="_blank"><img src="islab.png" width="75px" height="75px"></a>
               </div>
               <div class="modal-footer">
                 <h4>&copy; 2024 - Universita' degli Studi di Milano</h4>
@@ -131,9 +159,8 @@
       point_size: 2,
       background_color: 'black',
       click_function: "window.open(datum.doi, '_blank').focus();",
-      //click_function: "console.log(datum);",
+      //click_function: "//console.log(datum);",
 
-      // encoding API based roughly on Vega Lite: https://vega.github.io/vega-lite/docs/encoding.html
       encoding: {
         color: {
           field: 'subject_area',
@@ -156,33 +183,6 @@
             '#3498db', //azzurro
             '#d9534f', //rosso
           ],
-          /*range: [
-            '#D5EDB9', //verde chiaro
-            '#A4E1E9', //azzurro chiaro
-            '#789CCE', //blu
-            '#C4BDF3', //viola
-            '#FBE8A4', //giallo
-            '#FAC9DC', //rosso
-            '#FFC198', //arancione
-          ],*/
-          /*range: [
-            '#c0e57c', //(Lime Green desaturato)
-            '#8ae6e8', //(Dark Turquoise desaturato)
-            '#789CCE', //(Royal Blue desaturato)
-            '#e586f2', //(Magenta desaturato)
-            '#fcd875', //(Gold desaturato)
-            '#cc6b6b', //(Rosso desaturato)
-            '#f5b4a1', //(Orange Red desaturato)
-          ]*/
-          /*range: [
-            '#1abc9c', //(Turchese)
-            '#3498db', //(Blu)
-            '#e74c3c', //(Rosso)
-            '#2ecc71', //(Verde)
-            '#f39c12', //(Giallo)
-            '#9b59b6', //(Viola)
-            '#FF5733', //(Arancione)
-          ]*/
         },
         x: {
           field: 'x',
@@ -197,9 +197,17 @@
   
     const scatterplot = new Scatterplot('#deepscatter');
     const plot = scatterplot.plotAPI(prefs);
+    let palette = 0;
+    let visible_keywords = true;
+    let visible_categories = [1, 1, 1, 1, 1, 1, 1]
 
+    plot.then( () => paint_legend() )
+
+    /* INIZIALIZZAZIONE EVENTI INTERFACCIA */
     select('#search-btn').on("click", (event, data) => search());
     select('#search-reset-btn').on("click", (event, data) => resetSearchFilter());
+    document.getElementById("query-value").addEventListener("keypress", (event) => eventSearch(event) );
+
     select('#rect-search-btn').on("click", (event, data) => rectFilter());
     select('#rect-reset-btn').on("click", () => resetRectFilter());
 
@@ -219,26 +227,22 @@
       }
     }
     
-    document.getElementById("query-value").addEventListener("keypress", (event) => eventSearch(event) );
-
-
-    plot.then( () => paint_legend() )
-    
-    let palette = 0;
-    let visible_keywords = true;
-    let visible_categories = [1, 1, 1, 1, 1, 1, 1]
 
     /* Funzione per stampare la legenda filtrabile in alto a destra*/
     function paint_legend() {
-      const scale = scatterplot._renderer.aes.store.color.current.scale;
-
-      //creo la legenda per subject_area
+      let scale = scatterplot._renderer.aes.store.color.current.scale;
       let domain = [
         'Artificial Intelligence', 'General Decision Science','Decision Sciences',
         'Information Systems and Management','Management Science and Operations Research',
         'Statistics, Probability and Uncertainty',
         'Statistics and Probability', 'Reset'
       ]
+      let new_scale = [];
+
+      for(let i=0; i<domain.length; i++){
+        //console.log("domain[",i,"]=",domain[i],"/ scale=",scale(domain[i]));
+        new_scale[i] = scale(domain[i]);
+      }
 
       select('#color-legend')
         .selectAll('button')
@@ -248,7 +252,7 @@
         .attr('id', (d) => d)
         .text((d) => d)
         .on("click", (event, d) => filterSubjectArea(d))
-        .style('background-color', (d) => scale(d));
+        .style('background-color', (d, i) => visible_categories[i] ? new_scale[i] : 'grey' );
     }
 
     /* MOSTRO LE KEYWORD SOPRA AI PUNTI */
@@ -264,37 +268,6 @@
 
     /* RENDO LE KEYWORD CLICCABILI */
     scatterplot.label_click = (datum) => { filterByKeyword(datum) };
-
-    /* ESEMPI DI FILTRO:
-
-      RANGE DI VALORI a-b (within)
-        encoding: {
-          filter: {
-            field: 'x',
-            op: 'within',
-            a: 1,
-            b: 10,
-          },
-        };
-      
-      MAGGIORE / MINORE / UGUALE rispetto ad a ( gt / st / eq )
-        encoding: {
-          filter: {
-            field: 'x',
-            op: 'gt',
-            a: 12.3,
-          },
-        };
-      
-      FILTERING PER STRINGHE / FUNZIONI (lambda)
-        encoding: {
-          filter: {
-            field: 'x',
-            lambda: 'd => d=="Ciao" '
-          },
-        };
-
-    */
 
     //CODICE PER TOOLTIP
     scatterplot.tooltip_html = (datum) => {
@@ -332,45 +305,6 @@
               </div>`;
     };
 
-    
-
-    //FUNZIONE PER FLIPPARE IL GRAFO (inutile)
-    /*let cycle = 1
-    select('#flip').on('click', () => {
-      if ( cycle %2 ) {
-        const new_coding = {
-          encoding: {
-            x: {
-              field: 'y',
-              transform: 'literal',
-            },
-            y: {
-              field: 'x',
-              transform: 'literal',
-            },
-          },
-        };
-
-        cycle++;
-        scatterplot.plotAPI(new_coding);
-      } else {
-        const new_coding = {
-          encoding: {
-            x: {
-              field: 'x',
-              transform: 'literal',
-            },
-            y: {
-              field: 'y',
-              transform: 'literal',
-            },
-          },
-        };
-
-        cycle++;
-        scatterplot.plotAPI(new_coding);
-      }
-    });*/
 
     //FILTRO IL GRAFO PER subject_area
     function filterSubjectArea(d) {
@@ -385,9 +319,8 @@
         case 'Statistics and Probability' : visible_categories[6] = !visible_categories[6]; break;
         default: {
           visible_categories = [1, 1, 1, 1, 1, 1, 1];
-          setFilterButtonState();
           const reset = {encoding:{ filter: null}};
-          scatterplot.plotAPI(reset);
+          scatterplot.plotAPI(reset).then( () => paint_legend() ); 
           return;
         }
       }
@@ -408,8 +341,6 @@
         visible_categories = [1, 1, 1, 1, 1, 1, 1];
       }
 
-      setFilterButtonState();
-
       const new_coding = {
         encoding:{
           filter:{
@@ -419,32 +350,14 @@
         }
       };
 
-      console.log("NEW FILTER: ",new_coding);
-      scatterplot.plotAPI(new_coding); 
-    }
-
-    function setFilterButtonState(){
-
-      const scale = scatterplot._renderer.aes.store.color.current.scale;
-      let div = document.getElementById("color-legend").children
-
-      //console.log(scale(i))
-
-      for (let i=0; i<visible_categories.length; i++){
-        if(visible_categories[i]){
-          div[i].style.backgroundColor = scale(i);
-        } else {
-          div[i].style.backgroundColor = "grey";
-        }
-        
-      }
+      scatterplot.plotAPI(new_coding).then( () => paint_legend() ); 
     }
 
     //FILTRO IL GRAFO PER query testuale
     async function search() {
       let query = document.getElementById("query-value").value;
       let field = document.getElementById("query-field").value;
-      console.log("Query = ", query, " Field= ", field);
+      //console.log("Query = ", query, " Field= ", field);
 
       //rendo case insensitive la ricerca
       query = query.toLowerCase()
@@ -506,18 +419,11 @@
         }
       };
 
-      console.log("NEW FILTER: ", filter);
+      //console.log("NEW FILTER: ", filter);
       scatterplot.plotAPI(filter);
     }
 
-    function resetSearchFilter(){
-      const reset = {encoding:{ filter2: null }};
-      //console.log("RESET TEXT FILTER");
-      scatterplot.plotAPI(reset);
-      return;
-    }
-
-    //associato alla searchbar, effettua la ricerca quando viene premuto il tasto Invio
+    //effettua la ricerca testuale quando viene premuto il tasto Invio
     function eventSearch(event){
         if (event.key == "Enter"){
           search();
@@ -525,13 +431,21 @@
         return;
     }
 
-    //Filtro un rettangolo
+    //reset filtro testuale
+    function resetSearchFilter(){
+      const reset = {encoding:{ filter2: null }};
+      //console.log("RESET TEXT FILTER");
+      scatterplot.plotAPI(reset);
+      return;
+    }
+
+    //FILTRO IL GRAFO PER area rettangolare selezionata
     async function rectFilter(){
       let x1 = document.getElementById("xmin-value").value;
       let y1 = document.getElementById("ymin-value").value;
       let x2 = document.getElementById("xmax-value").value;
       let y2 = document.getElementById("ymax-value").value;
-      console.log("A (", x1,", ",y1, ")  B(", x2,", ",y2, ")");
+      //console.log("A (", x1,", ",y1, ")  B(", x2,", ",y2, ")");
       let rect = {
         x: [x1, x2],
         y: [y1, y2]
@@ -556,7 +470,7 @@
         }
       };   
 
-      console.log("NEW FILTER: ", filter);
+      //console.log("NEW FILTER: ", filter);
       scatterplot._zoom.zoom_to_bbox(rect);
       scatterplot.plotAPI(filter);
       //scatterplot.start_transformations(filter, 110).then( () => scatterplot.plotAPI(filter));
@@ -599,20 +513,20 @@
       //passo a un array del tipo [['a', 10], ['b', 20], ['c', 30]]
       let sorted = Object.entries(keywords).sort((a, b) => b[1] - a[1]);
 
-      console.log("KEYWORD TOT=", totKeywords);
+      //console.log("KEYWORD TOT=", totKeywords);
       for(let i=0; i<10; i++){
-        console.log("KEYWORD N",i," =", sorted[i][0], "/", sorted[i][1]);
+        //console.log("KEYWORD N",i," =", sorted[i][0], "/", sorted[i][1]);
       }
 
-      console.log("PUNTI TOT=", tot);
-      console.log("SUBJECT AREAS: ");
-      console.log("A+1702 = ",  avgSubjArea[0]/tot);
-      console.log("A+1800 = ",  avgSubjArea[1]/tot);
-      console.log("A+1801 = ",  avgSubjArea[2]/tot);
-      console.log("A+1802 = ",  avgSubjArea[3]/tot);
-      console.log("A+1803 = ",  avgSubjArea[4]/tot);
-      console.log("A+1804 = ",  avgSubjArea[5]/tot);
-      console.log("A+2613 = ",  avgSubjArea[6]/tot);
+      //console.log("PUNTI TOT=", tot);
+      //console.log("SUBJECT AREAS: ");
+      //console.log("A+1702 = ",  avgSubjArea[0]/tot);
+      //console.log("A+1800 = ",  avgSubjArea[1]/tot);
+      //console.log("A+1801 = ",  avgSubjArea[2]/tot);
+      //console.log("A+1802 = ",  avgSubjArea[3]/tot);
+      //console.log("A+1803 = ",  avgSubjArea[4]/tot);
+      //console.log("A+1804 = ",  avgSubjArea[5]/tot);
+      //console.log("A+2613 = ",  avgSubjArea[6]/tot);
 
       //creo la legenda per subject_area
       let domain = [
@@ -632,7 +546,7 @@
 
       
       for(let i=0; i<5; i++){
-        console.log("KEYWORD N",i," =", sorted[i][0], "/", sorted[i][1]);
+        //console.log("KEYWORD N",i," =", sorted[i][0], "/", sorted[i][1]);
         domain[10+i] = sorted[i][0]+": "+sorted[i][1]+" occurrencies"
       }
 
@@ -645,6 +559,7 @@
         .text((d) => d)
     }
 
+    //reset filtro area rettangolare
     function resetRectFilter(){
       let rect = {
         x: [-150, 150],
@@ -657,10 +572,8 @@
       scatterplot.plotAPI(filter);
     }
 
+    //alterno tra le palette disponibili per il grafico
     function swapPalette(){
-
-      let theme;
-
       switch (palette) {
 
         //Palette 1: ['#1abc9c', //(Turchese),'#3498db', //(Blu),'#e74c3c', //(Rosso),'#2ecc71', //(Verde),'#f39c12', //(Giallo),'#9b59b6', //(Viola),'#FF5733', //(Arancione)   ]
@@ -683,7 +596,7 @@
               }
             }
           };
-          console.log("NEW THEME: ", theme);
+          //console.log("NEW THEME: ", theme);
           scatterplot.plotAPI(theme).then( () => paint_legend() );
         }break;
 
@@ -707,13 +620,14 @@
               }
             }
           };
-          console.log("NEW THEME: ", theme);
+          //console.log("NEW THEME: ", theme);
           scatterplot.plotAPI(theme).then( () => paint_legend() );
         }break;
       }
 
     }
 
+    //mostro/nascondo le keyword sul grafico
     async function showHideLabels(){
 
       if(visible_keywords){
@@ -725,7 +639,7 @@
           '/tests/no-keywords.geojson',
           'categories',
           'name',
-          undefined, // size parameter in geojson
+          undefined,
           { draggable_labels: true, margin: 7, useColorScale: true }
         );
 
@@ -738,14 +652,15 @@
           '/tests/keywords.geojson',
           'categories',
           'name',
-          undefined, // size parameter in geojson
+          undefined,
           { draggable_labels: true, margin: 7, useColorScale: true }
         );
       }
     }
 
+    //FILTRO IL GRAFO PER keyword
     async function filterByKeyword(datum){
-      console.log(datum.text);
+      //console.log(datum.text);
 
       await scatterplot.dataset.register_transformation(`keyword : ${datum.text}`, (p) => {
         //1 se il punto contiene la keyword, 0 altrimenti
@@ -768,7 +683,7 @@
         }
       };   
 
-      console.log("NEW FILTER BY KEYWORD (FILTER 2) : ", filter);
+      //console.log("NEW FILTER BY KEYWORD (FILTER 2) : ", filter);
       scatterplot.plotAPI(filter);
     }
 
@@ -782,6 +697,10 @@
       top: 0px;
       left: 0px;
       z-index: 0;
+    }
+
+    .labelbbox {
+      cursor: pointer;
     }
   
     /* Styling legend content */
@@ -900,37 +819,6 @@
       }
 
     /* fine styling searchbar */
-
-    /* scrollbar style */
-    
-      /*
-      ::-webkit-scrollbar-track
-      {
-        -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
-        background-color: #F5F5F5;
-      }
-
-      ::-webkit-scrollbar
-      {
-        width: 7px;
-        height: 7px; 
-        background-color: #F5F5F5;
-      }
-
-      ::-webkit-scrollbar-thumb
-      {
-        background-color: #000000;
-        border: 1px solid #555555;
-      }*/
-      
-      
-      ::-webkit-scrollbar
-      {
-        width: 0px; 
-        height: 0px;
-      }
-      
-    /* fine scrollbar style */
     
     /* styling casella ricerca area */
       .rect-search {
@@ -991,7 +879,6 @@
         position: fixed;
         bottom: 20px;
         right: 20px;
-        /*background-color: #555;*/
       }
 
       .extra-btn {
@@ -1097,83 +984,33 @@
     
     /* fine styling barra extra */
 
-  </style>
-
-
-  <script>
-    /*
-    import init, { count_regex_matches } from '$lib/wasm_regex/wasm_regex';
-
-
-    export default async function apply_search(query, field, duration = 500, plot, on_find = (d: FindResults) => undefined) {
-      await run_search(query, plot, field, on_find);
-      if (query === '') {
-        return plot.plotAPI({
-          duration,
-          encoding: {
-            filter: null,
-            color: {
-              constant: 'orange'
-            },
-            size: {
-              constant: 1
-            },
-            foreground: null
-          }
-        });
-      } 
-      return plot.plotAPI({
-        duration,
-        alpha: 50,
-        encoding: {
-          filter: null,
-          color: {
-            field: `search: (${field}) ${query}`,
-            domain: [0, 1],
-            range: ['gray', 'orange']
-          },
-          size: {
-            field: `search: (${field}) ${query}`,
-            domain: [0, 1],
-            range: [1, 2]
-          },
-          foreground: {
-            field: `search: (${field}) ${query}`,
-            op: 'eq',
-            a: 1
-          }
-        }
-      });
-
-    }
-
-    export type FindResults = {
-      matches: any[],
-      tile: any,
-      hits: number
-    }
-
-    async function run_search(query, plot, field, on_find = (d : FindResults) => undefined) {
-      if (query === '') {
-        return;
+    /* scrollbar style */
+    
+      /*
+      ::-webkit-scrollbar-track
+      {
+        -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
+        background-color: #F5F5F5;
       }
-      await init();
-      plot._root.transformations[`search: (${field}) ${query}`] = async function (tile) {
-        const data = tile.record_batch.getChild(field).data[0];
-        const values = data.values;
-        const offsets = data.valueOffsets;
-        const matches_in_batches = count_regex_matches(values, offsets, query, true);
-        const matches = [];
-        let hits = 0;
-        for (let i = 0; i < matches_in_batches.length; i++) {
-          if (matches_in_batches[i] > 0) {
-            matches.push(tile.record_batch.get(i))
-            hits += 1
-          }
-        }
-        on_find({matches, tile, hits});
-        return matches_in_batches
-      };
-    }
-    */
-  </script>
+
+      ::-webkit-scrollbar
+      {
+        width: 7px;
+        height: 7px; 
+        background-color: #F5F5F5;
+      }
+
+      ::-webkit-scrollbar-thumb
+      {
+        background-color: #000000;
+        border: 1px solid #555555;
+      }*/
+      
+      ::-webkit-scrollbar
+      {
+        width: 0px; 
+        height: 0px;
+      }
+      
+    /* fine scrollbar style */
+  </style>
