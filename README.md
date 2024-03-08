@@ -34,38 +34,7 @@ quadfeather --files publications_for_deepscatter.csv --tile_size 50000 --destina
 4. Then setup this library to run. It will start a local dev server.
 
 ```sh
-npm i
 npm run dev
 ```
 
 5. If you go to `localhost:3344`, you should see an interactive scatterplot. To dig into what you're seeing, open `index.html`.
-
-
-## Build the module
-
-```sh
-npm run build
-```
-
-will create an ES module at `dist/deepscatter.es.js` The mechanics of
-importing this are very slightly different than `index.html`.
-
-Note that this is an ESM module and so requires you to use `<script type="module">` in your code.
-Don't worry! We're allowed to
-do this now! But do be aware that this will not work on computers running very old browsers.
-
-Snippet:
-
-```html
-<div id="my-div"></div>
-<script type="module">
-  import Scatterplot from './dist/deepscatter.umd.js';
-  f = new Scatterplot('#my-div');
-</script>
-```
-
-See `index_prod.html` for an example
-
-This is currently bundled with vite and rollup. There is/will be a further interaction layer on
-top of it, but the core plotting components are separate and should work as a standalone layer that supports
-plot requests via an API.
