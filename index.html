@@ -123,13 +123,13 @@
             </div>
             <div class="area-column2">
               <p style="text-align: center; margin-bottom: 5px;"> X </p>
-              <input id="xmin-value" class="area-form" name="xmin-value" type="number" value="-10">
-              <input id="xmax-value" class="area-form" name="xmax-value" type="number" value="10">
+              <input id="xmin-value" class="area-form" name="xmin-value" type="number" value="0">
+              <input id="xmax-value" class="area-form" name="xmax-value" type="number" value="0">
             </div>
             <div class="area-column3">
               <p style="text-align: center; margin-bottom: 5px;"> Y </p>
-              <input id="ymin-value" class="area-form" name="ymin-value" type="number" value="-10"><br>
-              <input id="ymax-value" class="area-form" name="ymax-value" type="number" value="10"><br>
+              <input id="ymin-value" class="area-form" name="ymin-value" type="number" value="0"><br>
+              <input id="ymax-value" class="area-form" name="ymax-value" type="number" value="0"><br>
             </div>
             <div class="area-column4">
               <p>  </p>
@@ -557,14 +557,14 @@
       // Filter the graph via selected area, reads data from x/y - min/max inputs
       // uses foreground parameter
       async function rectFilter(){
-        let Ax = document.getElementById("xmin-value").value;
-        let Ay = document.getElementById("ymin-value").value;
-        let Bx = document.getElementById("xmax-value").value;
-        let By = document.getElementById("ymax-value").value;
-        
-        // Check that points are placed correctly (Ax < Bx && Ay < By)
+        let Ax = parseInt(document.getElementById("xmin-value").value);
+        let Ay = parseInt(document.getElementById("ymin-value").value);
+        let Bx = parseInt(document.getElementById("xmax-value").value);
+        let By = parseInt(document.getElementById("ymax-value").value);
+
+        // Check that points are valid and placed correctly (Ax < Bx && Ay < By)
         let temp;
-        if (Ax == Bx || Ay == By){
+        if (Ax == Bx || Ay == By || isNaN(Ax) || isNaN(Ay) || isNaN(Bx) || isNaN(By) ){
           return;
         }
         if (Ax > Bx) {
@@ -577,6 +577,9 @@
           Ay = By;
           By = temp;
         }
+
+        // Add a small margin to compensate for rounding errors
+        Ax-=1; Ay-=1; Bx+=1; By+=1;
 
         let rect = {
           x: [Ax, Bx],
@@ -683,6 +686,11 @@
           x: [-200, 200],
           y: [300, -300]
         };
+
+        document.getElementById("xmin-value").value = 0;
+        document.getElementById("xmax-value").value = 0;
+        document.getElementById("ymin-value").value = 0;
+        document.getElementById("ymax-value").value = 0;
 
         const filter = { encoding: { foreground: null } };   
 
