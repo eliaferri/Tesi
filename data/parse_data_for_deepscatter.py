@@ -8,7 +8,7 @@ path = os.path.dirname(os.path.realpath(__file__))+"/"
 pubs = pd.read_csv(path+'publications.csv', delimiter=',', low_memory=False)
 print("-File publications.csv aperto con successo")
 
-pubs = pubs.filter(['id', 'title', 'pubdate', 'pubname', 'subject_area', 'doi'])
+pubs = pubs.filter(['id', 'eid', 'title', 'pubdate', 'pubname', 'subject_area', 'doi'])
 print("--File publications.csv ripulito da colonne superflue")
 
 # CONVERTO subject_area in testuale
