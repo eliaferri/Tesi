@@ -456,7 +456,8 @@
         x.className = x.className.replace("show", "");
 
         // Make search case insensitive
-        query = query.toLowerCase()
+        query = query.toLowerCase();
+        const term = new RegExp(query);
 
         // Reset the text filter if query is empty
         if (query == ""){
@@ -469,19 +470,16 @@
         switch(field){
           case "title": {
             await scatterplot.dataset.register_transformation(`query ${field} : ${query}`, (point) => {
-              const term = new RegExp(query);
               return point["title"].toLowerCase().match(term) ? 1 : 0;
             });
           }break;
           case "author": {
             await scatterplot.dataset.register_transformation(`query ${field} : ${query}`, (point) => {
-              const term = new RegExp(query);
               return point["authors"].toLowerCase().match(term) ? 1 : 0;
             });
           }break;
           case "pubdate": {
             await scatterplot.dataset.register_transformation(`query ${field} : ${query}`, (point) => {
-              const term = new RegExp(query);
               return point["pubdate"].getFullYear().toString().match(term) ? 1 : 0;
             });
           }break;
@@ -490,7 +488,7 @@
 
         //reset the graph to fix a potential bug (issue on gitHub)
         //scatterplot.plotAPI( {encoding: {filter: null}} );
-
+        
         const filter = {
           encoding:{
             filter2: {
