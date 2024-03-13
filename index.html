@@ -283,7 +283,7 @@
     
     /* UI Elements Initialization */
 
-      // Adding labels 
+      // Adding labels / keywords 
       plot.then(async (d) => {
         await scatterplot.add_labels_from_url(
           '/tests/keywords.geojson',
@@ -542,10 +542,10 @@
 
         if ( point == "A") {
           document.getElementById("xmin-value").value = Math.round(datum.x);
-          document.getElementById("ymin-value").value = Math.round(datum.y);
+          document.getElementById("ymin-value").value = Math.round(datum.y)*-1;
         } else {
           document.getElementById("xmax-value").value = Math.round(datum.x);
-          document.getElementById("ymax-value").value = Math.round(datum.y);
+          document.getElementById("ymax-value").value = Math.round(datum.y)*-1;
         }
 
         changeOnClick("default");
@@ -564,6 +564,9 @@
         if (Ax == Bx || Ay == By || isNaN(Ax) || isNaN(Ay) || isNaN(Bx) || isNaN(By) ){
           return;
         }
+
+        Ay *= -1; By *= -1;
+
         if (Ax > Bx) {
           temp = Ax;
           Ax = Bx;
@@ -767,7 +770,7 @@
             'categories',
             'name',
             undefined,
-            { draggable_labels: true, margin: 7, useColorScale: true }
+            undefined
           );
 
         } else {
