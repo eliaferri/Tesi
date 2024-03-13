@@ -764,7 +764,7 @@
 
           visible_keywords = false;
           document.getElementById("hide-labels-btn").innerHTML="Show Keyword";
-
+          select("#keywords").selectAll(".labelbbox").style("display","none");
           await scatterplot.add_labels_from_url(
             '/tests/no-keywords.geojson',
             'categories',
@@ -777,7 +777,7 @@
 
           visible_keywords = true;
           document.getElementById("hide-labels-btn").innerHTML="Hide Keyword";
-
+          select("#keywords").selectAll(".labelbbox").style("display","block");
           await scatterplot.add_labels_from_url(
             '/tests/keywords.geojson',
             'categories',
